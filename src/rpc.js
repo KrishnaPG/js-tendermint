@@ -82,7 +82,7 @@ class Client extends EventEmitter {
       if (this.closed) return
       this.emit('error', Error('websocket disconnected'), this)
       if (!this.reconnect) return
-      setTimeout(() => this.connectWs(), this.reconnectDelay || 5000)
+      setTimeout(() => { if(this.reconnect) this.connectWs(); }, this.reconnectDelay || 5000)
     })
     this.ws.on('data', (data) => {
       data = JSON.parse(data)
