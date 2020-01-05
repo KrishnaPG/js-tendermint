@@ -80,7 +80,9 @@ class Client extends EventEmitter {
     this.ws.on('error', (err) => this.emit('error', err))
     this.ws.on('close', () => {
       if (this.closed) return
-      this.emit('error', Error('websocket disconnected'))
+      this.emit('error', Error('websocket disconnected'), this)
+      if (!this.reconnect) return
+      setTimeout(() => this.connectWs(), this.reconnectDelay || 5000)
     })
     this.ws.on('data', (data) => {
       data = JSON.parse(data)
@@ -141,7 +143,11 @@ class Client extends EventEmitter {
 
   close () {
     this.closed = true
-    if (!this.ws) return
+    this.reconnect = false
+    if (!this.ws) return    
+    this.ws.removeAllListeners('data')
+    this.ws.removeAllListeners('close')
+    this.ws.removeAllListeners('error')
     this.ws.destroy()
   }
 }
